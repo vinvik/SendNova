@@ -14,6 +14,10 @@
 #define PORT 9999
 #define BUFFER_SIZE 1024
 
+#define Test
+
+#define Test2 1111
+
 int main()
 {
 	int sd;

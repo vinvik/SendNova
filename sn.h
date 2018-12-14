@@ -4,6 +4,7 @@
 	> Mail: ma6174@163.com 
 	> Created Time: 2018年02月01日 星期四 03时21分01秒
  ************************************************************************/
+#include<stdio.h>
 #include<vector>
 #include<netinet/in.h>
 #include<arpa/inet.h>

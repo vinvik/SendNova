@@ -20,8 +20,8 @@
 
 using namespace std;
 #define PORT 10004
-#define BUFFER_SIZE 1024
-
+#define BUFFER_SIZE 1024*10
+char Sbuff[BUFFER_SIZE] = {};
 int playerArr[1024] = {};
 int total_clients = 0;
 sn g_sn;
@@ -99,7 +99,7 @@ void accept_cb(struct ev_loop* loop,struct ev_io* watcher,int revents)
 	}
 
 	client_sd = accept(watcher->fd,(struct sockaddr*)&client_addr,&client_len );
-	client_sd = accept(watcher->fd,NULL,NULL);
+	//client_sd = accept(watcher->fd,NULL,NULL);
 	//getpeername(watcher->fd,(sockaddr*)&client_addr,&client_len);
 	char* pip = inet_ntoa(client_addr.sin_addr);
 	if(client_sd < 0)
@@ -118,7 +118,7 @@ void accept_cb(struct ev_loop* loop,struct ev_io* watcher,int revents)
 
 void read_cb(struct ev_loop* loop,struct ev_io* watcher,int revents)
 {
-	char buffer[BUFFER_SIZE];
+	//char buffer[BUFFER_SIZE];
 	int read;
 	int idx = 0;
 	if(EV_ERROR & revents)
@@ -126,34 +126,37 @@ void read_cb(struct ev_loop* loop,struct ev_io* watcher,int revents)
 		printf("error event in read\n");
 		return;
 	}
-
-	read = recv(watcher->fd,buffer,BUFFER_SIZE,0);
-	if(read == 0)
+	
+	while(1)
 	{
-		ev_io_stop(loop,watcher);
-		free(watcher);
-		perror("peer might closing\n");
-
-		g_sn.disconnect(watcher->fd);
-
-		return;
+		read = recv(watcher->fd,&Sbuff[idx],BUFFER_SIZE,0);
+		if(read == 0)
+		{
+			ev_io_stop(loop,watcher);
+			free(watcher);
+			perror("peer might closing\n");
+	
+			g_sn.disconnect(watcher->fd);
+	
+			break;
+		}
+		else if(read < 0)
+		{
+			g_sn.disconnect(watcher->fd);
+			printf("client close\n");
+			return;
+		}
+		else
+		{
+			idx += read;
+			//buffer[read] = '\0';
+			//printf("readnum:%d msg:%s\n",read,buffer);
+		}
 	}
-	else if(read < 0)
-	{
-		g_sn.disconnect(watcher->fd);
-		printf("client close\n");
-		return;
-	}
-	else
-	{
-		buffer[read] = '\0';
-		printf("readnum:%d msg:%s\n",read,buffer);
-	}
-
-	g_sn.recv_msg(-99,buffer,read,watcher->fd);
+	g_sn.recv_msg(-99,Sbuff,idx,watcher->fd);
 
 
-	bzero(buffer,read);
+	//bzero(buffer,read);
 
 }
 

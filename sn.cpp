@@ -35,6 +35,8 @@ void sn::disconnect(int sid)
 
 void sn::recv_msg(int id,void* msg,int size,int sid)
 {
+	printf("%s\n",msg);
+	return;
 	int Lid = id;
 	char* Lmsg = (char*)msg;
 	int Lsize = size;
